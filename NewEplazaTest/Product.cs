@@ -8,6 +8,10 @@ namespace NewEplazaTest
 {
     public class Product
     {
-        int Value;
+        public Product(int value, int quantity)
+        {
+           // value
+          
+        }
     }
 }

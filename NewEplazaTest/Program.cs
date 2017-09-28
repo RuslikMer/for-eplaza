@@ -15,6 +15,7 @@ using OpenQA.Selenium;
 using System.Drawing;
 using System.Net;
 using System.Net.Mail;
+using OpenQA.Selenium.Support.UI;
 
 
 namespace NewEplazaTest
@@ -23,36 +24,55 @@ namespace NewEplazaTest
     {
         public class Order
         {
-            public static int PriseOrder;
-            public static int PriseOrder2;
-            public static int delivery;
-            public static int PriseOrderTotals;
             public int OrderId { get; set; }
+            public string UrlAdress { get; set; }
+            public string ProdName { get; set; }
             public double ProductValue { get; set; }
             public double DeliveryValue { get; set; }
             public double OrderValue { get; set; }
+            public double AdminOrderValue { get; set; }
             public double Sap { get; set; }
             public double Uniteller { get; set; }
             public double nProductValue { get; set; }
             public double nDeliveryValue { get; set; }
             public double nOrderValue { get; set; }
+            public double nAdminOrderValue { get; set; }
             public double nSap { get; set; }
             public double nUniteller { get; set; }
             public RemoteWebDriver driver { set; get; }
-            public static string a { set; get; }
+            Object WrapText { get; set; }
+
 
             static void Main(string[] args)
             {
+
                 using (var driver = new ChromeDriver())
                 {
-                    driver.Navigate().GoToUrl("https://eplaza.panasonic.ru/products/digital_av/av_accessories/head_phone/RP-TCM105E/");
-                    driver.Manage().Window.Maximize();
-                    Task.Delay(9000).Wait();
-                    var to = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[3]/div/div/div[2]/div[2]/div[1]/div[2]/table/tbody/tr/td[3]/div/div/span/span/a[1]");
-                    to.Click();
-                    Task.Delay(2000).Wait();
-                    to = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[3]/div/div[2]/div[5]/a");
-                    to.Click();
+                    //void WaitShowElement(By XPath)
+                    //{
+                    //    WebDriverWait iWait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+                    //    iWait.Until(ExpectedConditions.ElementIsVisible(XPath));
+                    //}
+
+                    var timeout = new TimeSpan(00, 00, 07);
+                    string[] UrlAdress = new string[] { "https://eplaza.panasonic.ru/products/digital_av/av_accessories/head_phone/RP-TCM105E/", "https://eplaza.panasonic.ru/products/digital_av/av_accessories/head_phone/RP-HT161E-K/" };
+
+                    var productsPrise = new List<int>();
+
+                    var count = -1;
+                    for(int t = 0; t< UrlAdress.Length; t++)
+                    {
+                        count++;
+                        driver.Navigate().GoToUrl(UrlAdress[t]);
+                        var ProductPrise = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[3]/div/div/div[2]/div[1]/div[2]/div[2]/div[1]/span[1]").Text;
+                        int PrPrise = Convert.ToInt32(ProductPrise);
+                        productsPrise.Add(PrPrise);
+                        var buy = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.XPath("/html/body/div[1]/div/div/div/div[3]/div/div/div[2]/div[2]/div[1]/div[2]/table/tbody/tr/td[3]/div/div/span/span/a[1]")));
+                        buy.Click();
+                        driver.Manage().Window.Maximize();
+                    }
+
+                    driver.Navigate().GoToUrl("https://eplaza.panasonic.ru/personal/order/make/");
 
                     //рандом емайл
                     string s = "";
@@ -62,23 +82,22 @@ namespace NewEplazaTest
                         s += Convert.ToChar(rand.Next(65, 90));
                     }
 
-                    var city = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[3]/div/div[2]/form/div[1]/div/div[2]/div[2]/div[2]/div/a/span");
+                    var city = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.XPath("/html/body/div[1]/div/div/div/div[3]/div/div[2]/form/div[1]/div/div[2]/div[2]/div[2]/div/a/span")));
                     city.Click();
-                    Task.Delay(2000).Wait();
                     driver.SwitchTo().Window(driver.WindowHandles.ToList().Last());
-                    var city2 = driver.FindElementByXPath("/html/body/div[3]/div[1]/div[2]/div[2]/div[1]/div/div/div[2]/div[2]/div[1]/ul/li[1]/a");
-                    city2.Click();
-                    Task.Delay(2000).Wait();
+                    city = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.XPath("/html/body/div[3]/div[1]/div[2]/div[2]/div[1]/div/div/div[2]/div[2]/div[1]/ul/li[1]/a")));
+                    city.Click();
+                    Task.Delay(1500).Wait();
                     var adress = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[2]/div[4]/div[2]/input");
                     adress.SendKeys("Тестовая");
                     var index = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[2]/div[5]/div[2]/input");
                     index.SendKeys("123456");
-                    to = driver.FindElementByName("NEW_EMAIL");
-                    to.SendKeys(s + "@mail.ru");
+                    var mail = driver.FindElementByName("NEW_EMAIL");
+                    mail.SendKeys(s + "@mail.ru");
                     var password = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[3]/div[3]/div[2]/input");
                     password.SendKeys("Cent73");
-                    var password2 = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[3]/div[4]/div[2]/input");
-                    password2.SendKeys("Cent73");
+                    password = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[3]/div[4]/div[2]/input");
+                    password.SendKeys("Cent73");
                     var name = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[3]/div[5]/div[2]/input");
                     name.SendKeys("Тест");
                     var lastname = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[3]/div[6]/div[2]/input");
@@ -91,7 +110,6 @@ namespace NewEplazaTest
                     {
                         namb += Convert.ToChar(rand.Next(48, 57));
                     }
-
                     var number = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[3]/div[7]/div[2]/input");
                     number.SendKeys("993" + namb);
                     Directory.CreateDirectory("Public\\Test");
@@ -99,8 +117,6 @@ namespace NewEplazaTest
                     Directory.CreateDirectory("C:\\Users\\Stefan-PC\\Documents\\Test");
                     var pol = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[3]/div/div[2]/form/div[1]/div/div[3]/div[8]/div[2]/div/div/select/option[2]");
                     pol.Click();
-                    Task.Delay(2000);
-
 
                     //  скриншот + генератор названия
                     //string screenname = "";
@@ -116,240 +132,242 @@ namespace NewEplazaTest
 
                     //начальная стоимость  из оформления
                     var PriseOrder = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[5]/table/tbody/tr[1]/td[2]/span[1]").Text;
-                    int PrOr = Convert.ToInt32(PriseOrder);
-                    
+                    string[] prOrd = PriseOrder.Split(new Char[] { ' ' });
+                    foreach (string m in prOrd)
+                    {
+                        if (m.Trim() != "") ;
+                    }
+                    int PrOr = Convert.ToInt32(prOrd[0] + prOrd[1]);
 
                     //итоговая стоимость из оформления
-                    var PriseOrderTotals = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[3]/div/div[2]/form/div[1]/div/div[5]/table/tbody/tr[3]/td[2]/span[1]").Text;
-                    string[] prise = PriseOrderTotals.Split(new Char[] { ' ' });
+                    var PriseOrderTotal = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[3]/div/div[2]/form/div[1]/div/div[5]/table/tbody/tr[3]/td[2]/span[1]").Text;
+                    string[] prise = PriseOrderTotal.Split(new Char[] { ' ' });
                     foreach (string m in prise)
                     {
                         if (m.Trim() != "");
-                            //Console.WriteLine(m);
                     }
                     int PrOrT = Convert.ToInt32(prise[0]+prise[1]);
-                    Console.WriteLine(PrOrT);
                     pol.Submit();
 
-                    driver.Navigate().GoToUrl("https://eplaza.panasonic.ru/personal/orders/");
-                    Task.Delay(4000);
+                    //подтверждение совершеннолетия
                     driver.SwitchTo().Window(driver.WindowHandles.ToList().Last());
-                    var PopAp = driver.FindElementByXPath("//*[@id=\"inline_is_adult\"]/div/div[2]/div/div/div/label");
+                    var PopAp = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@id=\"inline_is_adult\"]/div/div[2]/div/div/div/label")));
                     PopAp.Click();
-                    Task.Delay(3500);
+                    Task.Delay(1000).Wait();
+
+                    //переход в лк
+                    driver.Navigate().Forward();
+                    driver.Navigate().GoToUrl("https://eplaza.panasonic.ru/personal/orders/");
+
                     //номер заказа
                     var OrderNumber = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[4]/div/div/div/div[2]/div[1]/div[1]/a").Text;
                     int OrdNum = Convert.ToInt32(OrderNumber);
-                    //стоимость доставки из лк
-                    Task.Delay(1500);
-                    var delivery = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[4]/div/div/div/div[2]/div[2]/div[4]/div[2]/div[2]/div/span[1]").Text;
 
+                    //стоимость доставки из лк
+                    var delivery = driver.FindElementByXPath("/html/body/div[1]/div/div/div/div[4]/div/div/div/div[2]/div[2]/div[4]/div[2]/div[2]/div/span[1]").Text;
                     string[] split = delivery.Split(new Char[] { ' ', '+', 'Р' });
                     foreach (string m in split)
                     {
-                        if (m.Trim() != "") ;
-                            //Console.WriteLine(m);
+                        if (m.Trim() != "");
                     }
                     int Del = Convert.ToInt32(split[1]);
 
-
-
                     //авторизация админки
-                    Task.Delay(3000);
                     driver.Navigate().Forward();
                     driver.Navigate().GoToUrl("https://eplaza.panasonic.ru/bitrix/admin/sale_order.php?lang=ru");
-                    Task.Delay(1000).Wait();
-                    var mail = driver.FindElementByName("USER_LOGIN");
+                    mail = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.Name("USER_LOGIN")));
                     mail.Clear();
                     mail.SendKeys("Bot");
-                    mail = driver.FindElementByName("USER_PASSWORD");
-                    mail.SendKeys("123456");
-                    mail.Submit();
-                    Task.Delay(9000).Wait();
+                    password = driver.FindElementByName("USER_PASSWORD");
+                    password.SendKeys("123456");
+                    password.Submit();
 
                     //поиск заказа
-                    var nmail = driver.FindElementByName("filter_user_login");
-                    nmail.SendKeys(s + "@mail.ru");
-                    mail = driver.FindElementById("tbl_sale_order_filterset_filter");
-                    mail.Click();
-                    Task.Delay(5000).Wait();
+                    var search = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.Name("filter_user_login")));
+                    search.SendKeys(s + "@mail.ru");
+                    search = driver.FindElementById("tbl_sale_order_filterset_filter");
+                    search.Click();
 
                     //детальная страница заказа
-                    mail = driver.FindElementByXPath("//*[@id=\"tbl_sale_order\"]/tbody/tr/td[3]/table/tbody/tr/td[2]/b/a");
-                    mail.Click();
+                    search = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.XPath("//*[@id=\"tbl_sale_order\"]/tbody/tr/td[3]/table/tbody/tr/td[2]/b/a")));
+                    search.Click();
                     var AdminOrder = driver.FindElementByXPath("//*[@id=\"edit1_edit_table\"]/tbody/tr[62]/td/table/tbody/tr/td[2]/div/table/tbody/tr[5]/td[2]/div").Text;
-                    Console.WriteLine(AdminOrder);
-
+                    string[] Adm = AdminOrder.Split(new Char[] { ' ' });
+                    foreach (string m in Adm)
+                    {
+                        if (m.Trim() != "");
+                    }
+                    int AdmOrd = Convert.ToInt32(Adm[0] + Adm[1]);
+                    
                     //отмена заказа
-                    mail = driver.FindElementByXPath("//*[@id=\"btn_show_cancel\"]/td[2]/a/span");
-                    mail.Click();
-                    Task.Delay(1500).Wait();
+                    var action = driver.FindElementByXPath("//*[@id=\"btn_show_cancel\"]/td[2]/a/span");
+                    action.Click();
                     driver.SwitchTo().Window(driver.WindowHandles.ToList().Last());
-                    mail = driver.FindElementByXPath("/html/body/div[6]/table/tbody/tr[2]/td[2]/div[3]/span[1]/span[2]");
-                    mail.Click();
+                    action = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.XPath("/html/body/div[6]/table/tbody/tr[2]/td[2]/div[3]/span[1]/span[2]")));
+                    action.Click();
+
+                    //url заказа
+                    driver.SwitchTo().Window(driver.WindowHandles.ToList().First());
+                    var label = driver.SwitchTo().Window(driver.WindowHandles.ToList().First()).Url; 
 
                     //XML
                     driver.Navigate().GoToUrl("https://eplaza.panasonic.ru/manager/services/showAllPricesXmlFormat.php");
-                    Task.Delay(10000).Wait();
-                    var bodyxml = driver.FindElementByXPath("/html/body/form/input[1]");
+                    var bodyxml = (new WebDriverWait(driver, timeout)).Until(ExpectedConditions.ElementIsVisible(By.XPath("/html/body/form/input[1]")));
                     bodyxml.SendKeys(OrderNumber);
                     bodyxml.Submit();
 
                     //юнителлер
                     string XmlUniteller = driver.FindElementByXPath("/html/body/order[1]/item[2]/total_summ").Text;
-                    Console.WriteLine(XmlUniteller);
                     int Unit = Convert.ToInt32(XmlUniteller);
 
+                    //названия товаров
+                    var ProductsNames = driver.FindElementsByTagName("name");
+                    var ProductName = new List<string>();
+                    for(int o = 0; o< UrlAdress.Length; o++)
+                    {
+                        var PrName = ProductsNames[o].Text;
+                        ProductName.Add(PrName);
+                    }
+                    
                     //сап
                     string XmlSap = driver.FindElementByXPath("/html/body/order[4]/item[1]/total_summ").Text;
-                    Console.WriteLine(XmlSap);
                     int Sap = Convert.ToInt32(XmlSap);
-                    //string words = "This is a list of words, with: a bit of punctuation" +
-                    //   "\tand a tab character.";
-
-                    //string[] split = XMLuniteller.Split(new Char[] { ' ', 'и', 'ц', '=', '>','q','s','v','t','(',')','[',']','' });
-
-                    //foreach (string m in split)
-                    //{
-
-                    //    if (m.Trim() != "")
-                    //        Console.WriteLine(m);
-                    //}
-
-                    //Console.WriteLine(XMLuniteller);
-                    //Task.Delay(2000).Wait();
-                    //var p = driver.FindElementByXPath("/html/body").Text;
-                    //File.WriteAllText(@"C:\Users\Stefan-PC\Documents\Test\page.txt", p);
-
-
-
-
-                    //string[] Words = new string[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k" };
-                    //int[] Value = new int[] { OrderNumber, "", "", "", "", "", "", "", "", "", "" };
+                                        
                     int a = OrdNum;
+                    string a1 = String.Join(" / ", ProductName);
                     int b = PrOr;
                     int c = Del;
                     int d = PrOrT;
+                    int d1 = AdmOrd;
                     int e = Sap;
                     int f = Unit;
-                    int g = 850;
+                    int g = productsPrise.Sum();
                     int h = 240;
-                    int i = 1090;
-                    int j = 1090;
-                    int k = 1090;
+                    int i = productsPrise.Sum() + h;
+                    int i1 = i;
+                    int j = i;
+                    int k = i;
+                    string k1 = label;
 
                     var EplazaOrders = new List<Order>
                     {
                         new Order
                         {
-                                  OrderId = a,
-                                  ProductValue = b,
-                                  DeliveryValue = c,
-                                  OrderValue = d,
-                                  Sap = e,
-                                  Uniteller = f,
+                            OrderId = a,
+                            ProdName = a1,
+                            ProductValue = b,
+                            DeliveryValue = c,
+                            OrderValue = d,
+                            AdminOrderValue = d1,
+                            Sap = e,
+                            Uniteller = f,
 
-                                  nProductValue = g,
-                                  nDeliveryValue = h,
-                                  nOrderValue = i,
-                                  nSap = j,
-                                  nUniteller = k
+                            nProductValue = g,
+                            nDeliveryValue = h,
+                            nOrderValue = i,
+                            nAdminOrderValue = i1,
+                            nSap = j,
+                            nUniteller = k,
+                            UrlAdress = k1
                         }
                     };
                         DisplayInExcel(EplazaOrders);
                 }
                        
                  void DisplayInExcel(IEnumerable<Order> orders)
-                {
+                 {
                     var excelApp = new Excel.Application();
                     Object missing = Type.Missing;
                     excelApp.Visible = true;
-
                     excelApp.Workbooks.Add(missing);
-
                     Excel._Worksheet workSheet = (Excel.Worksheet)excelApp.ActiveSheet;
 
-                    int[] Rep = new int[] { 2, 4, 6, 8, 10 };
-                    int[] nRep = new int[] { 3, 5, 7, 9, 11, 1 };
+                    int[] Rep = new int[] { 4, 6, 8, 10, 12, 14, 2};
+                    int[] nRep = new int[] { 3, 5, 7, 9, 11, 13, 15, 1 };
 
-                    for (int i = 0; i < 5; i++)
+                    //обЪединение ячеек
+                    for (int i = 0; i < 6; i++)
                     {
                         Excel.Range oRange1;
                         oRange1 = workSheet.Range[workSheet.Cells[1, Rep[i]], workSheet.Cells[1, nRep[i]]];
                         oRange1.Merge(Type.Missing);
                     }
 
-                    string[] Arr = new string[] { "C", "E", "G", "I", "K" };
-                    string[] Arr2 = new string[] { "B", "D", "F", "H", "J", "A" };
-                    string[] Arr3 = new string[] { "Cтоимость товара", "Стоимость доставки", "Стоимость заказа", "САП", "Uniteller", "Номер заказа" };
-                    for (int i = 0; i < 6; i++)
+                    string[] Arr = new string[] { "D", "F", "H", "J", "L","N" };
+                    string[] Arr2 = new string[] { "C", "E", "G", "I", "K", "M", "O" ,"A", "B" };
+                    string[] Arr3 = new string[] { "Cтоимость товара(ов)", "Стоимость доставки", "Стоимость заказа","Заказ в админке", "САП", "Uniteller","Ссылка на заказ" ,"Номер заказа", "Наименование товара" };
+                    string[] Arr4 = new string[] { "должно быть", "факт" };
+                    for (int i = 0; i < 9; i++)
                     {
                         workSheet.Cells[1, Arr2[i]] = Arr3[i];
                     }
-
-                    var row = 1;
+                    for(int i = 0; i < 6; i++)
+                    {
+                        workSheet.Cells[2, Arr2[i]] = Arr4[0];
+                    };
+                    for (int i = 0; i < 6; i++)
+                    {
+                        workSheet.Cells[2, Arr[i]] = Arr4[1];
+                    };
+                    var row = 2;
                     foreach (var ord in orders)
                     {
                         row++;
                         workSheet.Cells[row, "A"] = ord.OrderId;
-                        workSheet.Cells[row, "C"] = ord.ProductValue;
-                        workSheet.Cells[row, "E"] = ord.DeliveryValue;
-                        workSheet.Cells[row, "G"] = ord.OrderValue;
-                        workSheet.Cells[row, "I"] = ord.Sap;
-                        workSheet.Cells[row, "K"] = ord.Uniteller;
-                        workSheet.Cells[row, "B"] = ord.nProductValue;
-                        workSheet.Cells[row, "D"] = ord.nDeliveryValue;
-                        workSheet.Cells[row, "F"] = ord.nOrderValue;
-                        workSheet.Cells[row, "H"] = ord.nSap;
-                        workSheet.Cells[row, "J"] = ord.nUniteller;
-
+                        workSheet.Cells[row, "B"] = ord.ProdName;
+                        workSheet.Cells[row, "D"] = ord.ProductValue;
+                        workSheet.Cells[row, "F"] = ord.DeliveryValue;
+                        workSheet.Cells[row, "H"] = ord.OrderValue;
+                        workSheet.Cells[row, "J"] = ord.AdminOrderValue;
+                        workSheet.Cells[row, "L"] = ord.Sap;
+                        workSheet.Cells[row, "N"] = ord.Uniteller;
+                        workSheet.Cells[row, "C"] = ord.nProductValue;
+                        workSheet.Cells[row, "E"] = ord.nDeliveryValue;
+                        workSheet.Cells[row, "G"] = ord.nOrderValue;
+                        workSheet.Cells[row, "I"] = ord.nAdminOrderValue;
+                        workSheet.Cells[row, "K"] = ord.nSap;
+                        workSheet.Cells[row, "M"] = ord.nUniteller;
+                        workSheet.Cells[row, "O"] = ord.UrlAdress;
+                        workSheet.Cells[row, "P"] = " ";
                     }
 
-                    // workSheet.Columns[1].AutoFit();
-                    // workSheet.Columns[2].AutoFit();
-
                     //цвет текста          
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < 6; i++)
                     {
-                        if (workSheet.Cells[2, Arr2[i]].FormulaLocal == workSheet.Cells[2, Arr[i]].FormulaLocal)
+                        if (workSheet.Cells[3, Arr2[i]].FormulaLocal == workSheet.Cells[3, Arr[i]].FormulaLocal)
                         {
-
-                            Excel.Range rng2 = workSheet.get_Range(Arr[i] + "2");
-                            rng2.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Green);
+                            Excel.Range rng2 = workSheet.get_Range(Arr[i] + "3");
+                            rng2.Font.Color = ColorTranslator.ToOle(System.Drawing.Color.Green);
                         }
                         else
                         {
-                            Excel.Range rng2 = workSheet.get_Range(Arr[i] + "2");
-                            rng2.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                            Excel.Range rng2 = workSheet.get_Range(Arr[i] + "3");
+                            rng2.Font.Color = ColorTranslator.ToOle(System.Drawing.Color.Red);
                         }
                     }
-                    //редактирование ячеек 2 порядка
-                    for (int i = 0; i < 6; i++)
-                    {
-                        (workSheet.Cells[2, nRep[i]] as Excel.Range).HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                        //(workSheet.Cells[2, 1] as Excel.Range).Borders[Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Excel.XlLineStyle.xlDouble;
-                    }
-                    //редактирование ячеек 1 порядка
-                    for (int i = 0; i < 5; i++)
-                    {
-                        (workSheet.Cells[2, Rep[i]] as Excel.Range).HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                    }
 
-
-                    //границы ячеек
-                    workSheet.Range["A1", "K1"].AutoFormat(Excel.XlRangeAutoFormat.xlRangeAutoFormatClassic2);
-                    for (int i = 1; i < 3; i++)
+                    //редактирование ячеек 
+                    workSheet.Range["A1", "O2"].AutoFormat(Excel.XlRangeAutoFormat.xlRangeAutoFormatClassic2);
+                    for (int i = 0; i < 7; i++)
                     {
-                        Excel.Range rt = workSheet.get_Range("A" + i, "K" + i);
+                        (workSheet.Cells[3, Rep[i]] as Excel.Range).HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                        (workSheet.Cells[3, nRep[i]] as Excel.Range).HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                    }
+                    
+                    //границы ячеек 
+                    for (int i = 1; i < 4; i++)
+                    {
+                        Excel.Range rt = workSheet.get_Range("A" + i, "O" + i);
                         rt.Borders.ColorIndex = 0;
                         rt.Borders.LineStyle = Excel.XlLineStyle.xlContinuous;
                         rt.Borders.Weight = Excel.XlBorderWeight.xlThin;
                     }
 
+                    workSheet.Cells[3, "B"].WrapText = true;
+
                     //сохранение отчета
                     excelApp.DisplayAlerts = false;
                     workSheet.SaveAs(string.Format(@"{0}\Test.xlsx", Environment.CurrentDirectory));
-                    //Console.ReadKey();
                     excelApp.Quit();
 
                     //отправка отчета
@@ -358,8 +376,7 @@ namespace NewEplazaTest
                     using (MailMessage mailMessage = new MailMessage(fromMailAddress, toAddress))
                     using (SmtpClient smtpClient = new SmtpClient())
                     {
-
-                        mailMessage.Subject = "Отчет по тесту";
+                        mailMessage.Subject = "Отчет по автотестированию Еплазы";
                         mailMessage.Body = "Откройте документ";
                         //прикрепляем вложение
                         Attachment attData = new Attachment("C:/Users/new/Documents/Visual Studio 2017/Projects/NewEplazaTest/NewEplazaTest/bin/Debug/Test.xlsx");
@@ -372,7 +389,6 @@ namespace NewEplazaTest
                         smtpClient.UseDefaultCredentials = false;
                         smtpClient.Credentials = new NetworkCredential(fromMailAddress.Address, "123456eplaza");
                         smtpClient.Send(mailMessage);
-
                     }
                 }
             }
