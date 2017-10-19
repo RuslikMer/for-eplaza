@@ -94,8 +94,11 @@ namespace NewEplazaTest
                     }
                     driver.Navigate().GoToUrl("https://eplaza.panasonic.ru/personal/order/make/");
 
-                    NewUser user = new NewUser(driver);
-                    user.NewUsers();
+                    //NewUser user = new NewUser(driver);
+                    //user.NewUsers();
+                    User user = new User(driver);
+                    user.Auth();
+                    user.Action();
 
                     //начальная стоимость  из оформления
                     var PriseOrder = driver.FindElementByXPath("//*[@id=\"process_order\"]/div[1]/div/div[5]/table/tbody/tr[1]/td[2]/span[1]").Text;
@@ -121,8 +124,8 @@ namespace NewEplazaTest
                     user.Submit();
 
                     //подтверждение совершеннолетия
-                    _18_ check = new _18_(driver);
-                    check.Check();
+                    //_18_ check = new _18_(driver);
+                    //check.Check();
 
                     //переход в лк
                     driver.Navigate().Forward();
